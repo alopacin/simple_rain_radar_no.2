@@ -11,28 +11,22 @@ if os.path.exists(f):
             history_of_weather = {}
 
 class WeatherForecast :
-    def __init__(self, latitude, longitude, start_date, end_date, current_weather):
+    def __init__(self, latitude, longitude, start_date, end_date, temperature, windspeed):
         self.latitude = latitude
         self.longitude = longitude
         self.start_date = start_date
         self.end_date = end_date
-        self.current_weather = current_weather
+        self.temperature = temperature
+        self.windspeed = windspeed
 
     def __setitem__(self, key, value):
-        pass
+        self.key = value
 
     def __getitem__(self, item):
         pass
 
     def __iter__(self):
         pass
-
-
-    def __str__(self):
-        return f'Pogoda dla daty : ' \
-               f'{self.start_date} :'  \
-
-
 
 #inquiry = input('Wpisz datę we formacie YY-mm-dd: ')
 params = {
@@ -44,15 +38,19 @@ params = {
 }
 url = requests.get('https://api.open-meteo.com/v1/forecast', params = params)
 
+get_temperature = url.json()['current_weather']['temperature']
+get_windspeed = url.json()['current_weather']['windspeed']
 print(url.json())
 weather = WeatherForecast(
     latitude=params['latitude'],
     longitude = params['longitude'],
     start_date = params['start_date'],
     end_date = params['end_date'],
-    current_weather = params['current_weather']
+    temperature = get_temperature,
+    windspeed = get_windspeed
     )
 print(weather)
 
-
+with open(f, 'w') as file:
+    json.dump(weather.__dict__, file)
 print(url.status_code)
