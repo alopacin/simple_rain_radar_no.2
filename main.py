@@ -4,21 +4,35 @@ import os
 import datetime
 
 class WeatherForecast :
-    def __init__(self, latitude, longitude, date, temperature, windspeed):
+    history_of_weather = {}
+
+    def __init__(self, latitude, longitude, date, rain):
         self.latitude = latitude
         self.longitude = longitude
         self.date = date
-        self.temperature = temperature
-        self.windspeed = windspeed
+        self.rain = rain
 
     def __setitem__(self, key, value):
-        pass
+        self.history_of_weather[key] = value
 
-    def __getitem__(self, item):
-        pass
+    def __getitem__(self,key):
+        return self.history_of_weather[key]
 
     def __iter__(self):
-        yield self
+        yield self.history_of_weather.items()
+
+
+    def check_rain_forecast(self, data):
+        if data[0] > 0.0:
+            return 'Będzie padać'
+        elif data[0] == 0.0:
+            return 'Nie będzie padać'
+        else:
+            return 'Nie wiem'
+
+    def items(self):
+        for k, v in self.history_of_weather.items():
+            yield k, v
 
 
 f = 'history.txt'
@@ -30,7 +44,6 @@ if os.path.exists(f):
             history_of_weather = {}
 else:
     history_of_weather = {}
-print(history_of_weather)
 tomorrow = datetime.date.today() + datetime.timedelta(days = 1)
 formatted_tomorrow = tomorrow.strftime('%Y-%m-%d')
 requested_date = input('Wpisz datę we formacie YYYY-mm-dd: ')
@@ -39,13 +52,12 @@ if requested_date == '' :
     requested_date = formatted_tomorrow
 
 if requested_date in history_of_weather.keys():
-    latitude = history_of_weather[requested_date]['latitude']
-    longitude = history_of_weather[requested_date]['longitude']
-    temperature = history_of_weather[requested_date]['temperature']
-    windspeed = history_of_weather[requested_date]['windspeed']
-    weather = WeatherForecast(latitude, longitude, requested_date, temperature, windspeed)
-    print('ta data była juz sprawdzana')
-    exit()
+    lat = history_of_weather[requested_date]['latitude']
+    lon = history_of_weather[requested_date]['longitude']
+    rai = history_of_weather[requested_date]['rain']
+    weather = WeatherForecast(lat, lon, requested_date, rai)
+    print(history_of_weather)
+    print(f'Ta data ({requested_date}) była już sprawdzana')
 
 else:
     try:
@@ -57,20 +69,20 @@ else:
     params = {
         'latitude' : '52',
         'longitude' : '16',
+        'daily' : 'rain_sum',
         'start_date' : requested_date,
         'end_date' : requested_date,
-        'current_weather' : 'true',
+        'timezone' : 'auto'
     }
-    url = requests.get('https://api.open-meteo.com/v1/forecast', params = params)
 
-    get_temperature = url.json()['current_weather']['temperature']
-    get_windspeed = url.json()['current_weather']['windspeed']
-    weather = WeatherForecast(params['latitude'], params['longitude'], requested_date, get_temperature,get_windspeed)
+    url = requests.get('https://api.open-meteo.com/v1/forecast', params = params)
+    rain = url.json()['daily']['rain_sum']
+    weather = WeatherForecast(params['latitude'], params['longitude'], requested_date, rain)
+    print(weather.check_rain_forecast(rain))
     history_of_weather[requested_date] = weather.__dict__
-    print(weather)
-    print(history_of_weather)
     with open(f, 'w') as file:
         json.dump(history_of_weather, file)
-
-
+print('Te daty zostały już sprawdzone: ')
+for requested_date in history_of_weather:
+    print(requested_date)
 
