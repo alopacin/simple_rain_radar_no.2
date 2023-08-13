@@ -3,7 +3,7 @@ import datetime
 import json
 import os
 
-
+# utworzenie klasy wraz z metodami
 class WeatherForecast:
     def __init__(self, filename="history.txt"):
         self.filename = filename
@@ -54,7 +54,7 @@ class WeatherForecast:
         else:
             return 'Nie wiem'
 
-
+# sprawdzenie czy plik istnieje
 f = 'history.txt'
 if os.path.exists(f):
     with open(f,'r') as file:
@@ -63,7 +63,7 @@ if os.path.exists(f):
         except json.JSONDecodeError:
             history_of_weather = {}
 
-# Główny kod programu
+# glowny kod programu
 weather_forecast = WeatherForecast()
 
 requested_date = input('Podaj we formacie YYYY-mm-dd jaką datę chcesz sprawdzić: ')
@@ -78,6 +78,7 @@ else:
     rain_data = weather_forecast.get_forecast(requested_date)
     print(weather_forecast.check_rain_forecast(rain_data))
 
+# wyswietlenie wszystkich sprawdzonych dat
 print('Daty dla których znana jest pogoda:')
 for date in weather_forecast:
     print(date)
